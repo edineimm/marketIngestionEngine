@@ -1,0 +1,50 @@
+services:
+  # 1. O Banco de Dados
+  db:
+    image: postgres:16
+    container_name: market_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: market_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. O Mensageiro (Broker)
+  redis:
+    image: redis:alpine
+    container_name: market_redis
+    ports:
+      - "6379:6379"
+
+  # 3. A nossa API FastAPI
+  api:
+    build: .
+    container_name: market_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/app # Sincroniza o código local com o container (Hot reload)
+
+  # 4. O Trabalhador Braçal (Celery Worker)
+  worker:
+    build: .
+    container_name: market_worker
+    # Sobrescrevemos o CMD do Dockerfile para rodar o Celery em vez do FastAPI
+    command: celery -A app.worker.celery_app worker --loglevel=info
+    depends_on:
+      - db
+      - redis
+      - api
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
