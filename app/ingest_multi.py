@@ -3,7 +3,7 @@ import httpx
 from datetime import datetime
 from core.configs import settings
 
-API_URL = f"http://localhost:8000{settings.API_V1_STR}/market-data/bulk"
+API_URL = f"http://api:8000{settings.API_V1_STR}/market-data/bulk"
 BINANCE_BASE_URL = "https://api.binance.com/api/v3/klines"
 SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "ADAUSDT", "DOTUSDT", "LINKUSDT"]
 
